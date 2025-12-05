@@ -1,0 +1,16 @@
+version: "3.8"
+services:
+  inventary-service:
+    container_name: inventary-service
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    restart: always
+    ports:
+      - "${PORT}:4008"
+    networks:
+      - inventary-net
+networks:
+  inventary-net:
