@@ -1,10 +1,8 @@
 import {
   Entity,
   PrimaryGeneratedColumn,
-  Column,
-  OneToMany,
+  Column
 } from "typeorm";
-import { ProductSchema } from "./ProductSchema";
 
 @Entity({ name: "categories" })
 export class CategorySchema {
@@ -16,7 +14,4 @@ export class CategorySchema {
 
   @Column({ type: "text", nullable: true })
   description?: string;
-
-  @OneToMany(() => ProductSchema, (product) => product.category)
-  products?: ProductSchema[];
 }
