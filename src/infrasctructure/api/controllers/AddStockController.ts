@@ -9,31 +9,31 @@ export class AddStockController {
       const kitchenId = Number(req.params.kitchenId);
       const productId = Number(req.params.productId);
       const amount = Number(req.body.amount);
-      const userId = req.user?.userId;
+      const userId = (req as any).user?.userId;
 
-      if (!Number.isInteger(kitchenId) || kitchenId <= 0) {
-        return res.status(400).json({ success: false, message: "kitchenId inválido" });
+      if (!kitchenId || !productId || !amount) {
+        return res.status(400).json({
+          success: false,
+          message: "Parámetros inválidos",
+        });
       }
 
-      if (!Number.isInteger(productId) || productId <= 0) {
-        return res.status(400).json({ success: false, message: "productId inválido" });
+      if (!userId) {
+        return res.status(401).json({
+          success: false,
+          message: "Usuario no autenticado",
+        });
       }
 
-      if (!Number.isFinite(amount) || amount <= 0) {
-        return res.status(400).json({ success: false, message: "amount inválido" });
-      }
-
-      if (!Number.isInteger(userId)) {
-        return res.status(401).json({ success: false, message: "Usuario no autenticado" });
-      }
-
-      const uid = userId as number;
-
-      const result = await this.useCase.execute(kitchenId, productId, amount, uid);
+      const result = await this.useCase.execute(
+        kitchenId,
+        productId,
+        amount,
+        userId
+      );
 
       return res.status(200).json({
         success: true,
-        message: "Stock agregado correctamente",
         data: result,
       });
 

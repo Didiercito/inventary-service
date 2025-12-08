@@ -8,17 +8,52 @@ export class RegisterProductController {
 
   async execute(req: Request, res: Response) {
     try {
-      const data = await validateInput(Product, req.body);
+      const kitchenId = Number(req.params.kitchenId);
+      const user = req.user;
 
-      const result = await this.useCase.execute(data);
+      if (!Number.isInteger(kitchenId) || kitchenId <= 0) {
+        return res.status(400).json({
+          success: false,
+          message: "kitchenId inválido",
+        });
+      }
 
-      return res.status(201).json({
-        success: true,
-        message: "Producto registrado correctamente",
-        data: result,
+      if (!user || !Number.isInteger(user.userId)) {
+        return res.status(401).json({
+          success: false,
+          message: "Usuario no autenticado",
+        });
+      }
+
+      const product = await validateInput(Product, {
+        ...req.body,
+        kitchenId,
       });
+
+      const result = await this.useCase.execute(
+        kitchenId,
+        user.userId, // ✅ TypeScript feliz
+        product
+      );
+
+      return res.status(201).json(result);
+
     } catch (error: any) {
-      return res.status(400).json(error);
+      if (Array.isArray(error)) {
+        return res.status(400).json({
+          success: false,
+          message: "Validación fallida para Product",
+          errors: error.map(e => ({
+            property: e.property,
+            constraints: e.constraints,
+          })),
+        });
+      }
+
+      return res.status(400).json({
+        success: false,
+        message: error.message ?? "Error al registrar producto",
+      });
     }
   }
 }

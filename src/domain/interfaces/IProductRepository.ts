@@ -1,14 +1,37 @@
 import { Product } from "../entities/Product";
 
 export interface IProductRepository {
-  exists(productId: number): Promise<boolean>;
-  existsByName(name: string): Promise<boolean>;
 
-  findById(productId: number): Promise<Product | null>;
+  exists(
+    kitchenId: number,
+    productId: number
+  ): Promise<boolean>;
 
-  register(product: Product): Promise<Product>;
-  update(product: Product): Promise<Product>;
-  delete(productId: number): Promise<void>;
+  existsByName(
+    kitchenId: number,
+    name: string
+  ): Promise<boolean>;
 
-  filterByCategory(categoryId: number): Promise<Product[]>;
+  findById(
+    kitchenId: number,
+    productId: number
+  ): Promise<Product | null>;
+
+  register(
+    product: Product
+  ): Promise<Product>;
+
+  update(
+    product: Product
+  ): Promise<Product>;
+
+  delete(
+    kitchenId: number,
+    productId: number
+  ): Promise<void>;
+
+  filterByCategory(
+    kitchenId: number,
+    categoryId: number
+  ): Promise<Product[]>;
 }

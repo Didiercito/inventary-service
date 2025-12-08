@@ -3,12 +3,12 @@ dotenv.config();
 
 import app from "./app";
 
-const PORT = process.env.PORT || 4007;
+const PORT = process.env.PORT || 4008;
 
 const startServer = async () => {
   try {
     app.listen(PORT, () => {
-      console.log(`🚀 Inventary-Service running on port ${PORT}`);
+      console.log(`http://localhost:${PORT}`);
     });
   } catch (error: any) {
     console.error("❌ Failed to start Inventary-Service:", error);

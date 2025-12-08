@@ -1,31 +1,22 @@
 import { IProductRepository } from "../../domain/interfaces/IProductRepository";
 import { Product } from "../../domain/entities/Product";
-import { validateInput } from "../../domain/validators/validators";
 
 export class UpdateProductUseCase {
   constructor(private readonly productRepo: IProductRepository) {}
 
-  async execute(input: any) {
-    const product = await validateInput(Product, input);
+  async execute(input: Partial<Product> & { id: number; kitchenId: number }) {
+    const exists = await this.productRepo.exists(
+      input.kitchenId,
+      input.id
+    );
 
-    if (!product.id || product.id <= 0) {
-      throw {
-        success: false,
-        message: "ID inválido",
-        detail: "id debe ser entero mayor a 0",
-        received: product.id,
-      };
-    }
-
-    const exists = await this.productRepo.exists(product.id);
     if (!exists) {
       throw {
         success: false,
         message: "Producto no encontrado",
-        received: product.id,
       };
     }
 
-    return await this.productRepo.update(product);
+    return await this.productRepo.update(input as Product);
   }
 }

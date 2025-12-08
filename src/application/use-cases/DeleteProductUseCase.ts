@@ -1,28 +1,19 @@
 import { IProductRepository } from "../../domain/interfaces/IProductRepository";
+import { IInventoryRepository } from "../../domain/interfaces/IInventoryRepository";
 
 export class DeleteProductUseCase {
-  constructor(private readonly productRepo: IProductRepository) {}
+  constructor(
+    private readonly productRepo: IProductRepository,
+    private readonly inventoryRepo: IInventoryRepository
+  ) {}
 
-  async execute(productId: number) {
-    if (!Number.isInteger(productId) || productId <= 0) {
-      throw {
-        success: false,
-        message: "productId inválido",
-        detail: "Debe ser entero mayor a 0",
-        received: productId,
-      };
-    }
+  async execute(kitchenId: number, productId: number) {
+    await this.inventoryRepo.delete(kitchenId, productId);
+    await this.productRepo.delete(kitchenId, productId);
 
-    const exists = await this.productRepo.exists(productId);
-    if (!exists) {
-      throw {
-        success: false,
-        message: "Producto no encontrado",
-        received: productId,
-      };
-    }
-
-    await this.productRepo.delete(productId);
-    return { success: true };
+    return {
+      success: true,
+      message: "Producto eliminado correctamente",
+    };
   }
 }

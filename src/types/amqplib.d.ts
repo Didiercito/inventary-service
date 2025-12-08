@@ -1,4 +1,4 @@
-export {}; // NECESARIO
+export {};
 
 declare module "amqplib" {
   export interface Connection {

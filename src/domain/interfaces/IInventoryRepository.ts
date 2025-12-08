@@ -1,5 +1,3 @@
-import { InventoryItem } from "../entities/InventoryItem";
-
 export interface IInventoryRepository {
   exists(
     kitchenId: number,
@@ -9,36 +7,34 @@ export interface IInventoryRepository {
   findByProductId(
     kitchenId: number,
     productId: number
-  ): Promise<InventoryItem | null>;
+  ): Promise<any | null>;
 
-  create(item: InventoryItem): Promise<InventoryItem>;
+  findByKitchenId(
+    kitchenId: number
+  ): Promise<any[]>;
+
+  create(item: any): Promise<any>;
 
   addStock(
     kitchenId: number,
     productId: number,
     amount: number,
     userId: number
-  ): Promise<InventoryItem>;
+  ): Promise<any>;
 
   removeStock(
     kitchenId: number,
     productId: number,
     amount: number,
     userId: number
-  ): Promise<InventoryItem>;
+  ): Promise<any>;
 
   setStock(
     kitchenId: number,
     productId: number,
     quantity: number,
     userId: number
-  ): Promise<InventoryItem>;
-
-  filterByStock(
-    kitchenId: number,
-    mode: "greater" | "less",
-    quantity: number
-  ): Promise<InventoryItem[]>;
+  ): Promise<any>;
 
   delete(
     kitchenId: number,

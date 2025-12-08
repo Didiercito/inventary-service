@@ -1,0 +1,231 @@
+[
+  {
+    "description": "Health check público del servicio de inventarios",
+    "needsToken": false,
+    "rolesRequired": [],
+    "url": "http://localhost:3000/api/v1/inventory",
+    "method": "GET",
+    "req": {},
+    "res": {
+      "success": true,
+      "service": "Inventary-Service",
+      "status": "OK"
+    }
+  },
+
+  {
+    "description": "Obtener el inventario completo de una cocina (incluye info del producto)",
+    "needsToken": false,
+    "rolesRequired": [],
+    "url": "http://localhost:3000/api/v1/inventory/kitchens/{kitchenId}/items",
+    "method": "GET",
+    "req": {},
+    "res": {
+      "success": true,
+      "items": [
+        {
+          "inventoryId": 3,
+          "quantity": 0,
+          "updatedBy": 13,
+          "createdAt": "2025-12-08T11:34:07.219Z",
+          "updatedAt": "2025-12-08T11:34:07.219Z",
+          "product": {
+            "id": 4,
+            "name": "Manzanas",
+            "categoryId": 2,
+            "unit": "kg",
+            "perishable": false,
+            "shelfLifeDays": null
+          }
+        }
+      ]
+    }
+  },
+
+  {
+    "description": "Registrar un producto y darlo de alta en inventario",
+    "needsToken": true,
+    "rolesRequired": ["Admin_cocina"],
+    "url": "http://localhost:3000/api/v1/inventory/kitchens/{kitchenId}/products/register",
+    "method": "POST",
+    "req": {
+      "headers": {
+        "Authorization": "Bearer {token}"
+      },
+      "body": {
+        "name": "Manzanas",
+        "categoryId": 2,
+        "unit": "kg",
+        "perishable": false
+      }
+    },
+    "res": {
+      "success": true,
+      "message": "Producto registrado y agregado al inventario",
+      "product": {
+        "id": 4,
+        "name": "Manzanas"
+      },
+      "inventory": {
+        "productId": 4,
+        "quantity": 0
+      }
+    }
+  },
+
+  {
+    "description": "Agregar stock a un producto del inventario",
+    "needsToken": true,
+    "rolesRequired": ["Admin_cocina"],
+    "url": "http://localhost:3000/api/v1/inventory/kitchens/{kitchenId}/items/{productId}/add",
+    "method": "POST",
+    "req": {
+      "headers": {
+        "Authorization": "Bearer {token}"
+      },
+      "body": {
+        "amount": 10
+      }
+    },
+    "res": {
+      "success": true,
+      "message": "Stock agregado correctamente",
+      "data": {
+        "productId": 4,
+        "quantity": 10
+      }
+    }
+  },
+
+  {
+    "description": "Remover stock de un producto del inventario",
+    "needsToken": true,
+    "rolesRequired": ["Admin_cocina"],
+    "url": "http://localhost:3000/api/v1/inventory/kitchens/{kitchenId}/items/{productId}/remove",
+    "method": "POST",
+    "req": {
+      "headers": {
+        "Authorization": "Bearer {token}"
+      },
+      "body": {
+        "amount": 3
+      }
+    },
+    "res": {
+      "success": true,
+      "message": "Stock removido correctamente",
+      "data": {
+        "productId": 4,
+        "quantity": 7
+      }
+    }
+  },
+
+  {
+    "description": "Asignar un stock fijo a un producto",
+    "needsToken": true,
+    "rolesRequired": ["Admin_cocina"],
+    "url": "http://localhost:3000/api/v1/inventory/kitchens/{kitchenId}/items/{productId}/set",
+    "method": "POST",
+    "req": {
+      "headers": {
+        "Authorization": "Bearer {token}"
+      },
+      "body": {
+        "quantity": 50
+      }
+    },
+    "res": {
+      "success": true,
+      "message": "Stock asignado correctamente",
+      "data": {
+        "productId": 4,
+        "quantity": 50
+      }
+    }
+  },
+
+  {
+    "description": "Buscar un producto por ID dentro de una cocina",
+    "needsToken": true,
+    "rolesRequired": ["Admin_cocina"],
+    "url": "http://localhost:3000/api/v1/inventory/kitchens/{kitchenId}/products/{productId}",
+    "method": "GET",
+    "req": {
+      "headers": {
+        "Authorization": "Bearer {token}"
+      }
+    },
+    "res": {
+      "success": true,
+      "data": {
+        "id": 4,
+        "name": "Manzanas",
+        "categoryId": 2,
+        "unit": "kg",
+        "perishable": false
+      }
+    }
+  },
+
+  {
+    "description": "Filtrar productos por categoría dentro de una cocina",
+    "needsToken": true,
+    "rolesRequired": ["Admin_cocina"],
+    "url": "http://localhost:3000/api/v1/inventory/kitchens/{kitchenId}/products/category/{categoryId}",
+    "method": "GET",
+    "req": {
+      "headers": {
+        "Authorization": "Bearer {token}"
+      }
+    },
+    "res": {
+      "success": true,
+      "data": [
+        {
+          "id": 4,
+          "name": "Manzanas",
+          "unit": "kg"
+        }
+      ]
+    }
+  },
+
+  {
+    "description": "Actualizar un producto de la cocina",
+    "needsToken": true,
+    "rolesRequired": ["Admin_cocina"],
+    "url": "http://localhost:3000/api/v1/inventory/kitchens/{kitchenId}/products/{productId}",
+    "method": "PUT",
+    "req": {
+      "headers": {
+        "Authorization": "Bearer {token}"
+      },
+      "body": {
+        "name": "Manzanas Rojas",
+        "unit": "kg"
+      }
+    },
+    "res": {
+      "success": true,
+      "message": "Producto actualizado correctamente"
+    }
+  },
+
+  {
+    "description": "Eliminar un producto de la cocina (y su inventario)",
+    "needsToken": true,
+    "rolesRequired": ["Admin_cocina"],
+    "url": "http://localhost:3000/api/v1/inventory/kitchens/{kitchenId}/products/{productId}",
+    "method": "DELETE",
+    "req": {
+      "headers": {
+        "Authorization": "Bearer {token}"
+      }
+    },
+    "res": {
+      "success": true,
+      "message": "Producto eliminado correctamente"
+    }
+  }
+]

@@ -18,14 +18,20 @@ export enum UnitOfMeasure {
 }
 
 export class Product {
+
   @IsOptional()
   @IsInt()
   id?: number;
+
+  @IsInt()
+  @Min(1)
+  kitchenId!: number;
 
   @IsString()
   name!: string;
 
   @IsInt()
+  @Min(1)
   categoryId!: number;
 
   @IsEnum(UnitOfMeasure, {
@@ -43,7 +49,11 @@ export class Product {
 
   constructor(partial?: Partial<Product>) {
     if (partial) Object.assign(this, partial);
-    if (this.perishable && !this.shelfLifeDays) {
+
+    if (
+      this.perishable === true &&
+      this.shelfLifeDays === undefined
+    ) {
       throw new Error(
         "Los productos perecederos deben incluir shelfLifeDays"
       );

@@ -2,16 +2,17 @@ import express from "express";
 import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
-import {AppDataSource} from "./config/database"; 
+import { AppDataSource } from "./config/database";
 import inventoryRoutes from "./infrasctructure/api/routes/inventary.routes";
+
 const app = express();
 
-app.use(cors({origin : "*"}));
+app.use(cors({ origin: "*" }));
 app.use(helmet());
 app.use(morgan("dev"));
 app.use(express.json());
 
-app.get("/", (_, res) => {
+app.get("/", (_req, res) => {
   res.json({
     success: true,
     service: "Inventary-Service",
@@ -26,10 +27,10 @@ AppDataSource.initialize()
 
     app.use("/api/v1/inventory", inventoryRoutes);
 
-    console.log("🛣 Inventory Routes Loaded Successfully");
+    console.log("Inventory Routes Loaded Successfully");
   })
   .catch((error) => {
-    console.error("🔥 Cannot connect to DB", error);
+    console.error("Cannot connect to DB", error);
   });
 
 app.use((err: any, _req: any, res: any, _next: any) => {

@@ -1,57 +1,38 @@
 import { Repository } from "typeorm";
-import { IInventoryRepository } from "../../domain/interfaces/IInventoryRepository";
-import { InventoryItem } from "../../domain/entities/InventoryItem";
 import { InventoryItemSchema } from "../../database/schemas/InventoryItemSchema";
+import { IInventoryRepository } from "../../domain/interfaces/IInventoryRepository";
+import { IInventoryQueryRepository } from "../../domain/interfaces/IInventoryQueryRepository";
 
-export class InventoryAdapter implements IInventoryRepository {
+export class InventoryAdapter
+  implements IInventoryRepository, IInventoryQueryRepository {
+
   constructor(
     private readonly ormRepo: Repository<InventoryItemSchema>
   ) {}
 
-  async exists(
-    kitchenId: number,
-    productId: number
-  ): Promise<boolean> {
-    const count = await this.ormRepo.count({
-      where: { kitchenId, productId },
-    });
-    return count > 0;
+  async exists(kitchenId: number, productId: number): Promise<boolean> {
+    return (await this.ormRepo.count({
+      where: { kitchenId, productId }
+    })) > 0;
   }
 
-  async findByProductId(
-    kitchenId: number,
-    productId: number
-  ): Promise<InventoryItem | null> {
-    const row = await this.ormRepo.findOne({
-      where: { kitchenId, productId },
+  async findByProductId(kitchenId: number, productId: number) {
+    return await this.ormRepo.findOne({
+      where: { kitchenId, productId }
     });
-
-    return row
-      ? new InventoryItem({
-          id: row.id,
-          kitchenId: row.kitchenId,
-          productId: row.productId,
-          quantity: row.quantity,
-          updatedBy: row.updatedBy,
-          createdAt: row.createdAt,
-          updatedAt: row.updatedAt,
-        })
-      : null;
   }
 
-  async create(item: InventoryItem): Promise<InventoryItem> {
-    const row = this.ormRepo.create(item);
-    const saved = await this.ormRepo.save(row);
-
-    return new InventoryItem({
-      id: saved.id,
-      kitchenId: saved.kitchenId,
-      productId: saved.productId,
-      quantity: saved.quantity,
-      updatedBy: saved.updatedBy,
-      createdAt: saved.createdAt,
-      updatedAt: saved.updatedAt,
+  async findByKitchenId(kitchenId: number) {
+    return await this.ormRepo.find({
+      where: { kitchenId },
+      order: { updatedAt: "DESC" }
     });
+  }
+
+  async create(item: any) {
+    return await this.ormRepo.save(
+      this.ormRepo.create(item)
+    );
   }
 
   async addStock(
@@ -59,21 +40,14 @@ export class InventoryAdapter implements IInventoryRepository {
     productId: number,
     amount: number,
     userId: number
-  ): Promise<InventoryItem> {
-    const item = await this.findByProductId(kitchenId, productId);
-    if (!item) throw new Error("Producto no existe en inventario");
+  ) {
+    const row = await this.findByProductId(kitchenId, productId);
+    if (!row) throw new Error("Producto no existe");
 
-    item.addStock(amount);
-    item.updatedBy = userId;
-    item.updatedAt = new Date();
+    row.quantity += amount;
+    row.updatedBy = userId;
 
-    await this.ormRepo.update(item.id!, {
-      quantity: item.quantity,
-      updatedBy: userId,
-      updatedAt: item.updatedAt,
-    });
-
-    return item;
+    return await this.ormRepo.save(row);
   }
 
   async removeStock(
@@ -81,21 +55,14 @@ export class InventoryAdapter implements IInventoryRepository {
     productId: number,
     amount: number,
     userId: number
-  ): Promise<InventoryItem> {
-    const item = await this.findByProductId(kitchenId, productId);
-    if (!item) throw new Error("Producto no existe en inventario");
+  ) {
+    const row = await this.findByProductId(kitchenId, productId);
+    if (!row) throw new Error("Producto no existe");
 
-    item.removeStock(amount);
-    item.updatedBy = userId;
-    item.updatedAt = new Date();
+    row.quantity -= amount;
+    row.updatedBy = userId;
 
-    await this.ormRepo.update(item.id!, {
-      quantity: item.quantity,
-      updatedBy: userId,
-      updatedAt: item.updatedAt,
-    });
-
-    return item;
+    return await this.ormRepo.save(row);
   }
 
   async setStock(
@@ -103,59 +70,45 @@ export class InventoryAdapter implements IInventoryRepository {
     productId: number,
     quantity: number,
     userId: number
-  ): Promise<InventoryItem> {
-    const item = await this.findByProductId(kitchenId, productId);
-    if (!item) throw new Error("Producto no existe en inventario");
+  ) {
+    const row = await this.findByProductId(kitchenId, productId);
+    if (!row) throw new Error("Producto no existe");
 
-    item.setStock(quantity);
-    item.updatedBy = userId;
-    item.updatedAt = new Date();
+    row.quantity = quantity;
+    row.updatedBy = userId;
 
-    await this.ormRepo.update(item.id!, {
-      quantity,
-      updatedBy: userId,
-      updatedAt: item.updatedAt,
-    });
-
-    return item;
+    return await this.ormRepo.save(row);
   }
 
-  async filterByStock(
-    kitchenId: number,
-    mode: "greater" | "less",
-    quantity: number
-  ): Promise<InventoryItem[]> {
-    const qb = this.ormRepo.createQueryBuilder("inv");
-
-    qb.where("inv.kitchenId = :k", { k: kitchenId });
-
-    qb.andWhere(
-      mode === "greater"
-        ? "inv.quantity > :qty"
-        : "inv.quantity < :qty",
-      { qty: quantity }
-    );
-
-    const rows = await qb.getMany();
-
-    return rows.map(
-      row =>
-        new InventoryItem({
-          id: row.id,
-          kitchenId: row.kitchenId,
-          productId: row.productId,
-          quantity: row.quantity,
-          updatedBy: row.updatedBy,
-          createdAt: row.createdAt,
-          updatedAt: row.updatedAt,
-        })
-    );
-  }
-
-  async delete(
-    kitchenId: number,
-    productId: number
-  ): Promise<void> {
+  async delete(kitchenId: number, productId: number): Promise<void> {
     await this.ormRepo.delete({ kitchenId, productId });
+  }
+
+  async findKitchenInventory(kitchenId: number) {
+    const rows = await this.ormRepo
+      .createQueryBuilder("inv")
+      .innerJoin("products", "product", "product.id = inv.productId")
+      .where("inv.kitchenId = :kitchenId", { kitchenId })
+      .orderBy("product.name", "ASC")
+      .select([
+        "product.id",
+        "product.name",
+        "product.categoryId",
+        "product.unit",
+        "product.perishable",
+        "product.shelfLifeDays",
+        "inv.quantity"
+      ])
+      .getRawMany();
+
+    return rows.map(row => ({
+      productId: Number(row.product_id),
+      name: row.product_name,
+      categoryId: row.product_categoryId ?? null,
+      unit: row.product_unit,
+      perishable: row.product_perishable,
+      shelfLifeDays: row.product_shelfLifeDays ?? null,
+      quantity: Number(row.inv_quantity),
+    }));
   }
 }

@@ -1,6 +1,4 @@
 import { Request, Response } from "express";
-import { validateInput } from "../../../domain/validators/validators";
-import { Product } from "../../../domain/entities/Product";
 import { UpdateProductUseCase } from "../../../application/use-cases/UpdateProductUseCase";
 
 export class UpdateProductController {
@@ -8,16 +6,28 @@ export class UpdateProductController {
 
   async execute(req: Request, res: Response) {
     try {
-      const productId = Number(req.params.id);
-      if (!Number.isInteger(productId) || productId <= 0) {
+      const kitchenId = Number(req.params.kitchenId);
+      const productId = Number(req.params.productId);
+
+      if (!Number.isInteger(kitchenId) || kitchenId <= 0) {
         return res.status(400).json({
           success: false,
-          message: "Id inválido",
+          message: "kitchenId inválido",
         });
       }
 
-      const data = await validateInput(Product, req.body);
-      data.id = productId;
+      if (!Number.isInteger(productId) || productId <= 0) {
+        return res.status(400).json({
+          success: false,
+          message: "productId inválido",
+        });
+      }
+
+      const data = {
+        ...req.body,
+        id: productId,
+        kitchenId,
+      };
 
       const result = await this.useCase.execute(data);
 
@@ -26,6 +36,7 @@ export class UpdateProductController {
         message: "Producto actualizado correctamente",
         data: result,
       });
+
     } catch (error: any) {
       return res.status(400).json(error);
     }

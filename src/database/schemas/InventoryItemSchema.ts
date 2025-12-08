@@ -2,9 +2,12 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
+  ManyToOne,
+  JoinColumn,
   CreateDateColumn,
-  UpdateDateColumn,
+  UpdateDateColumn
 } from "typeorm";
+import { ProductSchema } from "./ProductSchema";
 
 @Entity({ name: "inventory_items" })
 export class InventoryItemSchema {
@@ -17,15 +20,19 @@ export class InventoryItemSchema {
   @Column()
   productId!: number;
 
-  @Column({ type: "decimal", precision: 10, scale: 2, default: 0 })
+  @ManyToOne(() => ProductSchema, { eager: false })
+  @JoinColumn({ name: "productId" })
+  product!: ProductSchema;
+
+  @Column({ type: "numeric", default: 0 })
   quantity!: number;
 
   @Column()
   updatedBy!: number;
 
-  @CreateDateColumn({ type: "timestamp" })
+  @CreateDateColumn()
   createdAt!: Date;
 
-  @UpdateDateColumn({ type: "timestamp" })
+  @UpdateDateColumn()
   updatedAt!: Date;
 }

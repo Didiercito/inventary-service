@@ -1,29 +1,54 @@
 import { IProductRepository } from "../../domain/interfaces/IProductRepository";
+import { IInventoryRepository } from "../../domain/interfaces/IInventoryRepository";
 import { Product } from "../../domain/entities/Product";
-import { validateInput } from "../../domain/validators/validators";
+import { InventoryItem } from "../../domain/entities/InventoryItem";
 
 export class RegisterProductUseCase {
-  constructor(private readonly productRepo: IProductRepository) {}
+  constructor(
+    private readonly productRepo: IProductRepository,
+    private readonly inventoryRepo: IInventoryRepository
+  ) {}
 
-  async execute(input: any) {
-    const product = await validateInput(Product, input);
-
-    if (!product.categoryId || product.categoryId <= 0) {
+  async execute(
+    kitchenId: number,
+    userId: number,
+    product: Product
+  ) {
+    if (!Number.isInteger(userId) || userId <= 0) {
       throw {
         success: false,
-        message: "categoryId inválido",
-        detail: "Debe ser un entero mayor a 0",
-        received: product.categoryId,
+        message: "userId inválido",
       };
     }
 
-    if (product.id) {
+    const exists = await this.productRepo.existsByName(
+      kitchenId,
+      product.name
+    );
+
+    if (exists) {
       throw {
         success: false,
-        message: "No debes enviar ID al registrar producto nuevo",
+        message: "El producto ya existe en esta cocina",
       };
     }
 
-    return await this.productRepo.register(product);
+    const savedProduct = await this.productRepo.register(product);
+
+    const inventoryItem = new InventoryItem({
+      kitchenId,
+      productId: savedProduct.id!,
+      quantity: 0,
+      updatedBy: userId,
+    });
+
+    const inventory = await this.inventoryRepo.create(inventoryItem);
+
+    return {
+      success: true,
+      message: "Producto registrado y agregado al inventario",
+      product: savedProduct,
+      inventory,
+    };
   }
 }

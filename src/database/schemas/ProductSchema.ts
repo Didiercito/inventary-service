@@ -2,35 +2,33 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
-  ManyToOne,
+  OneToMany,
 } from "typeorm";
-import { CategorySchema } from "./CategorySchema";
+import { InventoryItemSchema } from "./InventoryItemSchema";
 
 @Entity({ name: "products" })
 export class ProductSchema {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @Column({ type: "varchar", length: 200 })
+  @Column()
+  kitchenId!: number;
+
+  @Column({ length: 200 })
   name!: string;
 
   @Column()
   categoryId!: number;
 
-  @ManyToOne(() => CategorySchema, (category) => category.products, {
-    onDelete: "CASCADE",
-  })
-  category!: CategorySchema;
+  @Column({ length: 10 })
+  unit!: string;
 
-  @Column({
-    type: "varchar",
-    length: 10,
-  })
-  unit!: string; 
-
-  @Column({ type: "boolean", default: false })
+  @Column({ default: false })
   perishable!: boolean;
 
-  @Column({ type: "int", nullable: true })
+  @Column({ nullable: true })
   shelfLifeDays?: number;
+
+  @OneToMany(() => InventoryItemSchema, inv => inv.product)
+  inventoryItems?: InventoryItemSchema[];
 }

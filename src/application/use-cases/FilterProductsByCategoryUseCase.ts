@@ -1,18 +1,23 @@
 import { IProductRepository } from "../../domain/interfaces/IProductRepository";
 
 export class FilterProductsByCategoryUseCase {
-  constructor(private readonly productRepo: IProductRepository) {}
+  constructor(
+    private readonly productRepo: IProductRepository
+  ) {}
 
-  async execute(categoryId: number) {
-    if (!Number.isInteger(categoryId) || categoryId <= 0) {
-      throw {
-        success: false,
-        message: "categoryId inválido",
-        detail: "Debe ser entero mayor a 0",
-        received: categoryId,
-      };
-    }
+  async execute(kitchenId: number, categoryId: number) {
+    const products = await this.productRepo.filterByCategory(
+      kitchenId,
+      categoryId
+    );
 
-    return await this.productRepo.filterByCategory(categoryId);
+    return products.map(p => ({
+      id: p.id!,
+      name: p.name,
+      categoryId: p.categoryId,
+      unit: p.unit,             
+      perishable: p.perishable,
+      shelfLifeDays: p.shelfLifeDays ?? null,
+    }));
   }
 }

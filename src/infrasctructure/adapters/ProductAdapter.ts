@@ -14,7 +14,10 @@ const UnitMap: Record<string, UnitOfMeasure> = {
 };
 
 export class ProductAdapter implements IProductRepository {
-  constructor(private readonly ormRepo: Repository<ProductSchema>) { }
+
+  constructor(
+    private readonly ormRepo: Repository<ProductSchema>
+  ) {}
 
   private mapUnit(value: string): UnitOfMeasure {
     const normalized = value.trim().toLowerCase();
@@ -22,7 +25,8 @@ export class ProductAdapter implements IProductRepository {
     if (!(normalized in UnitMap)) {
       throw {
         success: false,
-        message: `Unidad inválida recibida desde BD: '${value}'`,
+        message: "Unidad inválida",
+        received: value,
         acceptedUnits: Object.keys(UnitMap),
       };
     }
@@ -30,28 +34,42 @@ export class ProductAdapter implements IProductRepository {
     return UnitMap[normalized];
   }
 
-  async exists(productId: number): Promise<boolean> {
-    const count = await this.ormRepo.count({ where: { id: productId } });
-    return count > 0;
+  async exists(kitchenId: number, productId: number): Promise<boolean> {
+    return (await this.ormRepo.count({
+      where: { id: productId, kitchenId },
+    })) > 0;
   }
 
-  async findById(productId: number): Promise<Product | null> {
-    const row = await this.ormRepo.findOne({ where: { id: productId } });
+  async existsByName(kitchenId: number, name: string): Promise<boolean> {
+    return (await this.ormRepo.count({
+      where: { kitchenId, name },
+    })) > 0;
+  }
 
-    return row
-      ? new Product({
-        id: row.id,
-        name: row.name,
-        categoryId: row.categoryId,
-        unit: this.mapUnit(row.unit),
-        perishable: row.perishable,
-        shelfLifeDays: row.shelfLifeDays,
-      })
-      : null;
+  async findById(
+    kitchenId: number,
+    productId: number
+  ): Promise<Product | null> {
+    const row = await this.ormRepo.findOne({
+      where: { id: productId, kitchenId },
+    });
+
+    if (!row) return null;
+
+    return new Product({
+      id: row.id,
+      kitchenId: row.kitchenId,
+      name: row.name,
+      categoryId: row.categoryId,
+      unit: this.mapUnit(row.unit),
+      perishable: row.perishable,
+      shelfLifeDays: row.shelfLifeDays,
+    });
   }
 
   async register(product: Product): Promise<Product> {
     const row = this.ormRepo.create({
+      kitchenId: product.kitchenId,
       name: product.name,
       categoryId: product.categoryId,
       unit: product.unit,
@@ -63,6 +81,7 @@ export class ProductAdapter implements IProductRepository {
 
     return new Product({
       id: saved.id,
+      kitchenId: saved.kitchenId,
       name: saved.name,
       categoryId: saved.categoryId,
       unit: this.mapUnit(saved.unit),
@@ -72,40 +91,41 @@ export class ProductAdapter implements IProductRepository {
   }
 
   async update(product: Product): Promise<Product> {
-    await this.ormRepo.update(product.id!, {
-      name: product.name,
-      categoryId: product.categoryId,
-      unit: product.unit,
-      perishable: product.perishable,
-      shelfLifeDays: product.shelfLifeDays,
-    });
-
+    await this.ormRepo.update(
+      { id: product.id!, kitchenId: product.kitchenId },
+      {
+        name: product.name,
+        categoryId: product.categoryId,
+        unit: product.unit,
+        perishable: product.perishable,
+        shelfLifeDays: product.shelfLifeDays,
+      }
+    );
     return product;
   }
 
-  async delete(productId: number): Promise<void> {
-    await this.ormRepo.delete({ id: productId });
+  async delete(kitchenId: number, productId: number): Promise<void> {
+    await this.ormRepo.delete({ id: productId, kitchenId });
   }
 
+  async filterByCategory(
+    kitchenId: number,
+    categoryId: number
+  ): Promise<Product[]> {
+    const rows = await this.ormRepo.find({
+      where: { kitchenId, categoryId },
+    });
 
-  async filterByCategory(categoryId: number): Promise<Product[]> {
-    const rows = await this.ormRepo.find({ where: { categoryId } });
-
-    return rows.map(
-      row =>
-        new Product({
-          id: row.id,
-          name: row.name,
-          categoryId: row.categoryId,
-          unit: this.mapUnit(row.unit),
-          perishable: row.perishable,
-          shelfLifeDays: row.shelfLifeDays,
-        })
+    return rows.map(row =>
+      new Product({
+        id: row.id,
+        kitchenId: row.kitchenId,
+        name: row.name,
+        categoryId: row.categoryId,
+        unit: this.mapUnit(row.unit),
+        perishable: row.perishable,
+        shelfLifeDays: row.shelfLifeDays,
+      })
     );
-  }
-
-  async existsByName(name: string): Promise<boolean> {
-    const count = await this.ormRepo.count({ where: { name } });
-    return count > 0;
   }
 }

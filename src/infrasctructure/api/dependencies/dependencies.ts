@@ -9,7 +9,6 @@ import { InventoryAdapter } from "../../adapters/InventoryAdapter";
 import { KitchenMembershipInventoryRepo } from "../../../database/repositories/KitchenMembershipInventoryRepo";
 
 import { RegisterProductUseCase } from "../../../application/use-cases/RegisterProductUseCase";
-import { CreateProductUseCase } from "../../../application/use-cases/CreateProductUseCase";
 import { UpdateProductUseCase } from "../../../application/use-cases/UpdateProductUseCase";
 import { DeleteProductUseCase } from "../../../application/use-cases/DeleteProductUseCase";
 import { FindProductByIdUseCase } from "../../../application/use-cases/FindProductByIdUseCase";
@@ -19,8 +18,9 @@ import { AddStockUseCase } from "../../../application/use-cases/AddStockUseCase"
 import { RemoveStockUseCase } from "../../../application/use-cases/RemoveStockUseCase";
 import { SetStockUseCase } from "../../../application/use-cases/SetStockUseCase";
 import { FilterInventoryByStockUseCase } from "../../../application/use-cases/FilterInventoryByStockUseCase";
+import { GetKitchenInventoryUseCase } from "../../../application/use-cases/GetKitchenInventoryUseCase";
 
-import { CreateProductController } from "../controllers/CreateProductController";
+import { RegisterProductController } from "../controllers/RegisterProductController";
 import { UpdateProductController } from "../controllers/UpdateProductController";
 import { DeleteProductController } from "../controllers/DeleteProductController";
 import { FindProductByIdController } from "../controllers/FindProductByIdController";
@@ -30,7 +30,7 @@ import { AddStockController } from "../controllers/AddStockController";
 import { RemoveStockController } from "../controllers/RemoveStockController";
 import { SetStockController } from "../controllers/SetStockController";
 import { FilterInventoryByStockController } from "../controllers/FilterInventoryByStockController";
-
+import { GetKitchenInventoryController } from "../controllers/GetKitchenInventoryController";
 
 export function buildDependencies(db: DataSource) {
 
@@ -42,33 +42,65 @@ export function buildDependencies(db: DataSource) {
   const inventoryRepo = new InventoryAdapter(inventoryOrmRepo);
   const membershipRepo = new KitchenMembershipInventoryRepo(membershipOrmRepo);
 
-  const registerProductUseCase = new RegisterProductUseCase(productRepo);
-  const createProductUseCase = new CreateProductUseCase(productRepo);
-  const updateProductUseCase = new UpdateProductUseCase(productRepo);
-  const deleteProductUseCase = new DeleteProductUseCase(productRepo);
-  const findProductByIdUseCase = new FindProductByIdUseCase(productRepo);
+  const registerProductUseCase =
+    new RegisterProductUseCase(productRepo, inventoryRepo);
+
+  const updateProductUseCase =
+    new UpdateProductUseCase(productRepo);
+
+  const deleteProductUseCase =
+    new DeleteProductUseCase(productRepo, inventoryRepo);
+
+  const findProductByIdUseCase =
+    new FindProductByIdUseCase(productRepo);
+
   const filterProductsByCategoryUseCase =
     new FilterProductsByCategoryUseCase(productRepo);
 
-  const addStockUseCase = new AddStockUseCase(inventoryRepo);
-  const removeStockUseCase = new RemoveStockUseCase(inventoryRepo);
-  const setStockUseCase = new SetStockUseCase(inventoryRepo);
+  const addStockUseCase =
+    new AddStockUseCase(inventoryRepo);
+
+  const removeStockUseCase =
+    new RemoveStockUseCase(inventoryRepo);
+
+  const setStockUseCase =
+    new SetStockUseCase(inventoryRepo);
+
   const filterInventoryByStockUseCase =
     new FilterInventoryByStockUseCase(inventoryRepo);
 
-  const createProductController = new CreateProductController(createProductUseCase);
-  const updateProductController = new UpdateProductController(updateProductUseCase);
-  const deleteProductController = new DeleteProductController(deleteProductUseCase);
-  const findProductByIdController = new FindProductByIdController(findProductByIdUseCase);
+  const getKitchenInventoryUseCase =
+    new GetKitchenInventoryUseCase(inventoryRepo);
+
+  const registerProductController =
+    new RegisterProductController(registerProductUseCase);
+
+  const updateProductController =
+    new UpdateProductController(updateProductUseCase);
+
+  const deleteProductController =
+    new DeleteProductController(deleteProductUseCase);
+
+  const findProductByIdController =
+    new FindProductByIdController(findProductByIdUseCase);
+
   const filterProductsByCategoryController =
     new FilterProductsByCategoryController(filterProductsByCategoryUseCase);
 
-  const addStockController = new AddStockController(addStockUseCase);
-  const removeStockController = new RemoveStockController(removeStockUseCase);
-  const setStockController = new SetStockController(setStockUseCase);
+  const addStockController =
+    new AddStockController(addStockUseCase);
+
+  const removeStockController =
+    new RemoveStockController(removeStockUseCase);
+
+  const setStockController =
+    new SetStockController(setStockUseCase);
+
   const filterInventoryByStockController =
     new FilterInventoryByStockController(filterInventoryByStockUseCase);
 
+  const getKitchenInventoryController =
+    new GetKitchenInventoryController(getKitchenInventoryUseCase);
 
   return {
     repos: {
@@ -76,32 +108,17 @@ export function buildDependencies(db: DataSource) {
       inventoryRepo,
       membershipRepo,
     },
-
-    useCases: {
-      registerProductUseCase,
-      createProductUseCase,
-      updateProductUseCase,
-      deleteProductUseCase,
-      findProductByIdUseCase,
-      filterProductsByCategoryUseCase,
-
-      addStockUseCase,
-      removeStockUseCase,
-      setStockUseCase,
-      filterInventoryByStockUseCase,
-    },
-
     controllers: {
-      createProductController,
+      registerProductController,
       updateProductController,
       deleteProductController,
       findProductByIdController,
       filterProductsByCategoryController,
-
       addStockController,
       removeStockController,
       setStockController,
       filterInventoryByStockController,
+      getKitchenInventoryController,
     },
   };
 }
