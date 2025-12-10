@@ -26,6 +26,8 @@ import { GetAllCategoriesUseCase } from "../../../application/use-cases/GetAllCa
 import { UpdateCategoryUseCase } from "../../../application/use-cases/UpdateCategoryUseCase";
 import { DeleteCategoryUseCase } from "../../../application/use-cases/DeleteCategoryUseCase";
 
+import { GetUnitsUseCase } from "../../../application/use-cases/GetUnitsUseCase";
+
 import { RegisterProductController } from "../controllers/RegisterProductController";
 import { UpdateProductController } from "../controllers/UpdateProductController";
 import { DeleteProductController } from "../controllers/DeleteProductController";
@@ -42,7 +44,7 @@ import { CreateCategoryController } from "../controllers/CreateCategoryControlle
 import { GetCategoriesController } from "../controllers/GetCategoriesController";
 import { UpdateCategoryController } from "../controllers/UpdateCategoryController";
 import { DeleteCategoryController } from "../controllers/DeleteCategoryController";
-
+import { GetUnitsController } from "../controllers/GetUnitsController";
 
 export function buildDependencies(db: DataSource) {
 
@@ -98,6 +100,9 @@ export function buildDependencies(db: DataSource) {
   const deleteCategoryUseCase =
     new DeleteCategoryUseCase(categoryRepo);
 
+  const getUnitsUseCase =
+    new GetUnitsUseCase();
+
   const registerProductController =
     new RegisterProductController(registerProductUseCase);
 
@@ -140,6 +145,9 @@ export function buildDependencies(db: DataSource) {
   const deleteCategoryController =
     new DeleteCategoryController(deleteCategoryUseCase);
 
+  const getUnitsController =
+    new GetUnitsController(getUnitsUseCase);
+
   return {
     repos: {
       productRepo,
@@ -164,6 +172,7 @@ export function buildDependencies(db: DataSource) {
       getCategoriesController,
       updateCategoryController,
       deleteCategoryController,
+      getUnitsController,
     },
   };
 }
