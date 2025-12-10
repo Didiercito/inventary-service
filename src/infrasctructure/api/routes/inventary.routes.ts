@@ -15,7 +15,7 @@ router.get(
 
 router.post(
   "/kitchens/:kitchenId/products/register",
-  authenticate,
+  authenticate, 
   (req, res) =>
     controllers.registerProductController.execute(req, res)
 );

@@ -1,11 +1,12 @@
 import { DataSource } from "typeorm";
-
 import { ProductSchema } from "../../../database/schemas/ProductSchema";
 import { InventoryItemSchema } from "../../../database/schemas/InventoryItemSchema";
 import { KitchenMembershipSchema } from "../../../database/schemas/KitchenMembershipSchema";
+import { CategorySchema } from "../../../database/schemas/CategorySchema";
 
 import { ProductAdapter } from "../../adapters/ProductAdapter";
 import { InventoryAdapter } from "../../adapters/InventoryAdapter";
+import { CategoryAdapter } from "../../adapters/CategoryAdapter";
 import { KitchenMembershipInventoryRepo } from "../../../database/repositories/KitchenMembershipInventoryRepo";
 
 import { RegisterProductUseCase } from "../../../application/use-cases/RegisterProductUseCase";
@@ -20,6 +21,11 @@ import { SetStockUseCase } from "../../../application/use-cases/SetStockUseCase"
 import { FilterInventoryByStockUseCase } from "../../../application/use-cases/FilterInventoryByStockUseCase";
 import { GetKitchenInventoryUseCase } from "../../../application/use-cases/GetKitchenInventoryUseCase";
 
+import { CreateCategoryUseCase } from "../../../application/use-cases/CreateCategoryUseCase";
+import { GetAllCategoriesUseCase } from "../../../application/use-cases/GetAllCategoriesUseCase";
+import { UpdateCategoryUseCase } from "../../../application/use-cases/UpdateCategoryUseCase";
+import { DeleteCategoryUseCase } from "../../../application/use-cases/DeleteCategoryUseCase";
+
 import { RegisterProductController } from "../controllers/RegisterProductController";
 import { UpdateProductController } from "../controllers/UpdateProductController";
 import { DeleteProductController } from "../controllers/DeleteProductController";
@@ -32,15 +38,23 @@ import { SetStockController } from "../controllers/SetStockController";
 import { FilterInventoryByStockController } from "../controllers/FilterInventoryByStockController";
 import { GetKitchenInventoryController } from "../controllers/GetKitchenInventoryController";
 
+import { CreateCategoryController } from "../controllers/CreateCategoryController";
+import { GetCategoriesController } from "../controllers/GetCategoriesController";
+import { UpdateCategoryController } from "../controllers/UpdateCategoryController";
+import { DeleteCategoryController } from "../controllers/DeleteCategoryController";
+
+
 export function buildDependencies(db: DataSource) {
 
   const productOrmRepo = db.getRepository(ProductSchema);
   const inventoryOrmRepo = db.getRepository(InventoryItemSchema);
   const membershipOrmRepo = db.getRepository(KitchenMembershipSchema);
+  const categoryOrmRepo = db.getRepository(CategorySchema);
 
   const productRepo = new ProductAdapter(productOrmRepo);
   const inventoryRepo = new InventoryAdapter(inventoryOrmRepo);
   const membershipRepo = new KitchenMembershipInventoryRepo(membershipOrmRepo);
+  const categoryRepo = new CategoryAdapter(categoryOrmRepo);
 
   const registerProductUseCase =
     new RegisterProductUseCase(productRepo, inventoryRepo);
@@ -72,6 +86,18 @@ export function buildDependencies(db: DataSource) {
   const getKitchenInventoryUseCase =
     new GetKitchenInventoryUseCase(inventoryRepo);
 
+  const createCategoryUseCase =
+    new CreateCategoryUseCase(categoryRepo);
+
+  const getAllCategoriesUseCase =
+    new GetAllCategoriesUseCase(categoryRepo);
+
+  const updateCategoryUseCase =
+    new UpdateCategoryUseCase(categoryRepo);
+
+  const deleteCategoryUseCase =
+    new DeleteCategoryUseCase(categoryRepo);
+
   const registerProductController =
     new RegisterProductController(registerProductUseCase);
 
@@ -102,11 +128,24 @@ export function buildDependencies(db: DataSource) {
   const getKitchenInventoryController =
     new GetKitchenInventoryController(getKitchenInventoryUseCase);
 
+  const createCategoryController =
+    new CreateCategoryController(createCategoryUseCase);
+
+  const getCategoriesController =
+    new GetCategoriesController(getAllCategoriesUseCase);
+
+  const updateCategoryController =
+    new UpdateCategoryController(updateCategoryUseCase);
+
+  const deleteCategoryController =
+    new DeleteCategoryController(deleteCategoryUseCase);
+
   return {
     repos: {
       productRepo,
       inventoryRepo,
       membershipRepo,
+      categoryRepo,
     },
     controllers: {
       registerProductController,
@@ -114,11 +153,17 @@ export function buildDependencies(db: DataSource) {
       deleteProductController,
       findProductByIdController,
       filterProductsByCategoryController,
+
       addStockController,
       removeStockController,
       setStockController,
       filterInventoryByStockController,
       getKitchenInventoryController,
+
+      createCategoryController,
+      getCategoriesController,
+      updateCategoryController,
+      deleteCategoryController,
     },
   };
 }

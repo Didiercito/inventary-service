@@ -4,6 +4,7 @@ import helmet from "helmet";
 import morgan from "morgan";
 import { AppDataSource } from "./config/database";
 import inventoryRoutes from "./infrasctructure/api/routes/inventary.routes";
+import categoryRoutes from "./infrasctructure/api/routes/category.routes";
 
 const app = express();
 
@@ -27,7 +28,9 @@ AppDataSource.initialize()
 
     app.use("/api/v1/inventory", inventoryRoutes);
 
-    console.log("Inventory Routes Loaded Successfully");
+    app.use("/api/v1/inventory/categories", categoryRoutes);
+
+    console.log("Inventory & Category Routes Loaded Successfully");
   })
   .catch((error) => {
     console.error("Cannot connect to DB", error);
