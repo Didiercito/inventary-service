@@ -29,10 +29,8 @@ AppDataSource.initialize()
     console.log("📦 Inventary DB Connected!");
 
     app.use("/api/v1/inventory", inventoryRoutes);
-
     app.use("/api/v1/inventory/categories", categoryRoutes);
-
-    app.use("/api/v1/inventory/units", unitRoutes);
+    app.use("/api/v1/inventory", unitRoutes);
 
     console.log("Inventory, Category & Unit Routes Loaded Successfully");
   })
@@ -42,7 +40,6 @@ AppDataSource.initialize()
 
 app.use((err: any, _req: any, res: any, _next: any) => {
   console.error("Unexpected Error:", err);
-
   return res.status(err.status || 500).json({
     success: false,
     message: "Error interno en Inventary-Service",
