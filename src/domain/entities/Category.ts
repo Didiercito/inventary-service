@@ -12,7 +12,6 @@ export class Category {
   @IsString()
   name!: string;
 
-  @IsOptional()
   @IsString()
   description?: string;
 

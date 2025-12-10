@@ -6,11 +6,15 @@ import { Category } from "../../../domain/entities/Category";
 export class CreateCategoryController {
   constructor(
     private readonly useCase: CreateCategoryUseCase
-  ) {}
+  ) { }
 
   async execute(req: Request, res: Response) {
     try {
-      const category = await validateInput(Category, req.body);
+
+      const category = await validateInput(Category, {
+        name: req.body.name,
+        description: req.body.description
+      });
 
       const result = await this.useCase.execute(category);
 
