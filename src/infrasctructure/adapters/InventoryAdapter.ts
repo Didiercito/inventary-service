@@ -156,24 +156,28 @@ export class InventoryAdapter implements IInventoryRepository {
       .where("inv.kitchenId = :kitchenId", { kitchenId })
       .orderBy("product.name", "ASC")
       .select([
-        "product.id AS productId",
+        "product.id AS product_id",
         "product.name AS name",
-        "product.categoryId AS categoryId",
+        "product.categoryId AS category_id",
         "product.unit AS unit",
         "product.perishable AS perishable",
-        "product.shelfLifeDays AS shelfLifeDays",
+        "product.shelfLifeDays AS shelf_life_days",
         "CAST(inv.quantity AS FLOAT) AS quantity"
       ])
       .getRawMany();
 
     return rows.map(row => ({
-      productId: Number(row.productId),
+      productId: Number(row.product_id),
       name: row.name,
-      categoryId: row.categoryId ?? null,
+      categoryId: row.category_id !== null ? Number(row.category_id) : null,
       unit: row.unit,
       perishable: row.perishable,
-      shelfLifeDays: row.shelfLifeDays ?? null,
+      shelfLifeDays:
+        row.shelf_life_days !== null
+          ? Number(row.shelf_life_days)
+          : null,
       quantity: Number(row.quantity),
     }));
   }
+
 }
